@@ -3,10 +3,7 @@
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-# Shapes owned by the Auth Layer (HLD: Auth Translation Design). Plain dicts until
-# core/auth.py exists and gives them a real type.
-AuthConfig = dict[str, str]
-Credentials = dict[str, str]
+from core.auth import AuthConfig, Credentials
 
 
 @dataclass
