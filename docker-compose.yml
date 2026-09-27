@@ -1,0 +1,13 @@
+# The mock backends. Credentials here are throwaway fixtures for local runs and CI only.
+name: heptapod
+services:
+  crm:
+    build: {context: ., dockerfile: mocks/Dockerfile}
+    command: uvicorn --factory mocks.crm_service.app:create_app --host 0.0.0.0 --port 8000
+    environment:
+      CRM_API_KEY: crm-dev-key
+    ports: ["8001:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os, urllib.request as r; r.urlopen(r.Request(\"http://localhost:8000/customers\", headers={\"X-API-Key\": os.environ[\"CRM_API_KEY\"]}))"]
+      interval: 2s
+      retries: 15
