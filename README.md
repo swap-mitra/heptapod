@@ -2,8 +2,6 @@
 
 Heptapod is a Python library giving an LLM agent one uniform tool interface across REST, SOAP, and SQL backends, with authentication translated underneath so agent code never changes per system.
 
-Contributor workflow: [AGENTS.md](AGENTS.md).
-
 ## Setup
 
 ```bash
