@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "adapter-kit"
+name = "heptapod"
 version = "0.1.0"
 description = "One uniform tool interface for LLM agents across REST, SOAP, and SQL backends."
 readme = "README.md"

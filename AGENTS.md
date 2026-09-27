@@ -2,9 +2,9 @@
 
 ## Project
 
-Universal System-Adapter Kit, a Python library giving an LLM agent one uniform tool interface across REST, SOAP, and SQL backends, with authentication translated underneath so agent code never changes per system.
+Heptapod, a Python library giving an LLM agent one uniform tool interface across REST, SOAP, and SQL backends, with authentication translated underneath so agent code never changes per system.
 
-Full requirements: `specs/PRD.md`. Full design: `specs/HLD.md`. This file is workflow and conventions only, it is not a source of truth for what to build.
+Full requirements: `specs/PRD.md`. Full design: `specs/HLD.md`. `specs/` is local only (gitignored), never committed. This file is workflow and conventions only, it is not a source of truth for what to build.
 
 ## Spec-driven development
 
@@ -24,13 +24,13 @@ Adding a new backend: follow "Extensibility" in `specs/HLD.md` exactly, one adap
 Mirrors `specs/HLD.md` → Repo Layout & Tech Stack:
 
 ```
-adapter-kit/
+heptapod/
   core/            # Adapter protocol, Tool Registry, Auth Layer
   adapters/        # one file per backend
   mocks/           # the three standalone mock services (REST, SOAP, SQL)
   agent/           # the tool-calling loop
   tests/
-  specs/           # PRD.md, HLD.md — read these first
+  specs/           # PRD.md, HLD.md, PLAN.md; local only, read these first
   docker-compose.yml
 ```
 
