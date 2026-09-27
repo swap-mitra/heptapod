@@ -1,0 +1,6 @@
+# One table per adapter: `class` is its import path; every other key goes to its constructor.
+# Secrets never go here; each adapter's module docstring names the env vars it needs.
+
+[crm]
+class = "adapters.crm:CrmAdapter"
+base_url = "http://localhost:8001"

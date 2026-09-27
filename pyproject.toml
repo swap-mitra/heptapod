@@ -11,7 +11,9 @@ requires-python = ">=3.12"
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+# The mock backends; also needed by the tests, which run each mock in-process.
+mocks = ["fastapi>=0.141", "uvicorn>=0.54"]
+dev = ["pytest>=8", "heptapod[mocks]"]
 
 [tool.setuptools.packages.find]
 include = ["core*", "adapters*", "agent*"]
