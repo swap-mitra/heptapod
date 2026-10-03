@@ -11,3 +11,15 @@ services:
       test: ["CMD", "python", "-c", "import os, urllib.request as r; r.urlopen(r.Request(\"http://localhost:8000/customers\", headers={\"X-API-Key\": os.environ[\"CRM_API_KEY\"]}))"]
       interval: 2s
       retries: 15
+  ticketing:
+    build: {context: ., dockerfile: mocks/Dockerfile}
+    command: uvicorn --factory mocks.ticketing_service.app:create_app --host 0.0.0.0 --port 8000
+    environment:
+      TICKETING_USER: support
+      TICKETING_PASSWORD: ticketing-dev-pass
+      TICKETING_RATE_LIMIT_EVERY: "5"
+    ports: ["8002:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as r; r.urlopen(\"http://localhost:8000/health\")"]
+      interval: 2s
+      retries: 15

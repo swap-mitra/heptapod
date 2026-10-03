@@ -4,3 +4,7 @@
 [crm]
 class = "adapters.crm:CrmAdapter"
 base_url = "http://localhost:8001"
+
+[ticketing]
+class = "adapters.ticketing:TicketingAdapter"
+base_url = "http://localhost:8002"
