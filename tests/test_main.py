@@ -1,7 +1,11 @@
+import io
 import os
+import sys
+from types import SimpleNamespace
 
 import pytest
 
+import agent.__main__ as cli
 from agent.__main__ import load_dotenv
 
 
@@ -27,3 +31,18 @@ def test_malformed_line_names_the_line_not_its_content(tmp_path):
     with pytest.raises(SystemExit) as exc:
         load_dotenv(env)
     assert "line 2" in str(exc.value) and "sk-or" not in str(exc.value)
+
+
+def test_answer_prints_on_a_console_that_cannot_encode_it(monkeypatch, tmp_path):
+    # Windows consoles default to cp1252; models freely answer with characters like "→".
+    console = io.TextIOWrapper(io.BytesIO(), encoding="cp1252", newline="\n")
+    monkeypatch.setattr(sys, "stdout", console)
+    monkeypatch.setattr(sys, "argv", ["agent", "task"])
+    monkeypatch.chdir(tmp_path)  # no .env here
+    monkeypatch.setenv("HEPTAPOD_PROVIDER", "openrouter")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+    monkeypatch.setattr(cli, "Registry", SimpleNamespace(from_config=lambda path: None))
+    monkeypatch.setattr(cli, "run_openrouter", lambda *args, **kwargs: "T-9004 → in_progress")
+    cli.main()
+    console.flush()
+    assert console.buffer.getvalue() == b"T-9004 ? in_progress\n"

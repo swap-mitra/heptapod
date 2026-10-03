@@ -58,6 +58,8 @@ def main() -> None:
         answer = run_openrouter(sys.argv[1], registry, OpenRouterClient(api_key), model=model or OPENROUTER_DEFAULT_MODEL)
     else:
         sys.exit(f"unknown HEPTAPOD_PROVIDER {provider!r}; expected 'anthropic' or 'openrouter'")
+    # Windows consoles default to cp1252; an answer with e.g. "→" must not crash the run.
+    sys.stdout.reconfigure(errors="replace")
     print(answer)
 
 
