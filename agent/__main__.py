@@ -5,11 +5,13 @@ Needs the mocks up (`docker compose up -d`) and their secrets in the environment
 HEPTAPOD_PROVIDER picks the LLM provider:
 - `anthropic` (default): Anthropic credentials (ANTHROPIC_API_KEY or an `ant auth login` profile).
 - `openrouter`: OPENROUTER_API_KEY; defaults to free models.
-HEPTAPOD_MODEL overrides the provider's default model; HEPTAPOD_CONFIG the adapters.toml path."""
+HEPTAPOD_MODEL overrides the provider's default model; HEPTAPOD_CONFIG the adapters.toml path.
+Any of these can live in a local `.env` file (see `.env.example`); the shell's values win."""
 
 import logging
 import os
 import sys
+from pathlib import Path
 
 import anthropic
 
@@ -18,9 +20,30 @@ from agent.runtime import ANTHROPIC_DEFAULT_MODEL, OPENROUTER_DEFAULT_MODEL, run
 from core.registry import Registry
 
 
+def load_dotenv(path: str | Path = ".env") -> None:
+    """Set env vars from `KEY=value` lines in `path`, if it exists. Vars already set in the
+    shell are kept; blank values are skipped."""
+    try:
+        lines = Path(path).read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        return
+    for number, line in enumerate(lines, 1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, sep, value = line.partition("=")
+        if not sep:
+            # The line itself is not echoed: it may be a pasted secret.
+            sys.exit(f"{path} line {number}: expected KEY=value")
+        value = value.strip().strip("\"'")
+        if value:
+            os.environ.setdefault(key.strip(), value)
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         sys.exit('usage: python -m agent "<task>"')
+    load_dotenv()
     provider = os.environ.get("HEPTAPOD_PROVIDER", "anthropic")
     model = os.environ.get("HEPTAPOD_MODEL")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")

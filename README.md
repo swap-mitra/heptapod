@@ -15,10 +15,12 @@ pytest
 ## Running the agent
 
 ```bash
+cp .env.example .env               # then fill in your LLM key
 docker compose up -d --wait        # mock backends
-export CRM_API_KEY=crm-dev-key     # throwaway fixture credential from docker-compose.yml
 python -m agent "Find customer C-1003 and list their open ticket ids"
 ```
+
+`python -m agent` reads `.env` (gitignored) for any variable not already set in the shell.
 
 Pick the LLM provider with `HEPTAPOD_PROVIDER`:
 
