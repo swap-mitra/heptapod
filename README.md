@@ -17,11 +17,19 @@ pytest
 ```bash
 docker compose up -d --wait        # mock backends
 export CRM_API_KEY=crm-dev-key     # throwaway fixture credential from docker-compose.yml
-export ANTHROPIC_API_KEY=...       # or sign in with `ant auth login`
 python -m agent "Find customer C-1003 and list their open ticket ids"
 ```
 
-Each tool call is logged with system, operation, latency, and outcome. `HEPTAPOD_MODEL` overrides the model (default `claude-opus-5`).
+Pick the LLM provider with `HEPTAPOD_PROVIDER`:
+
+| Provider | Set | Default model |
+| --- | --- | --- |
+| `anthropic` (default) | `ANTHROPIC_API_KEY`, or sign in with `ant auth login` | `claude-opus-5` |
+| `openrouter` | `OPENROUTER_API_KEY` (free account at openrouter.ai) | `openrouter/free`, which routes to a free tool-capable model |
+
+`HEPTAPOD_MODEL` overrides the default. `openrouter/free` may pick a different model each turn; pin one (e.g. `HEPTAPOD_MODEL=qwen/qwen3.8-27b:free`) for repeatable runs. Free models are rate limited, and the client retries those responses a few times before failing.
+
+Each tool call is logged with system, operation, latency, and outcome.
 
 ## Adding a backend
 
