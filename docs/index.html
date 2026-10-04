@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heptapod: one tool interface for LLM agents across REST, SOAP, and SQL</title>
+<meta name="description" content="Heptapod gives an LLM agent one tool interface to REST, SOAP, and SQL backends, and translates API key, OAuth2, and basic auth underneath. Adding a system never changes the agent.">
+<meta name="theme-color" content="#c7c9c4">
+<link rel="canonical" href="https://swap-mitra.github.io/heptapod/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Heptapod">
+<meta property="og:description" content="One tool interface for LLM agents across REST, SOAP, and SQL backends, with auth translated underneath.">
+<meta property="og:url" content="https://swap-mitra.github.io/heptapod/">
+<link rel="preload" href="fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/martian-mono.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face {
+  font-family: "Archivo";
+  src: url("fonts/archivo.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Martian Mono";
+  src: url("fonts/martian-mono.woff2") format("woff2");
+  font-weight: 100 800;
+  font-stretch: 75% 112.5%;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DSEG14";
+  src: url("fonts/dseg14-classic-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --plate: #c7c9c4;      /* aluminium faceplate */
+  --plate-hi: #dcddd9;   /* raised key face */
+  --ink: #111111;
+  --ink-soft: #33342f;   /* secondary text on the plate */
+  --lcd: #ffb000;        /* amber display field */
+  --lcd-ink: #1c1300;    /* lit segments */
+  --lcd-dim: #c98a00;    /* secondary text on the display */
+  --live: #e8341c;       /* the one live lamp */
+  --rule: 3px solid var(--ink);
+  --gutter: clamp(16px, 4vw, 56px);
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "Martian Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scrollbar-color: var(--ink) var(--plate); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--plate);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  font-stretch: 100%;
+  caret-color: var(--live);
+}
+::selection { background: var(--lcd); color: var(--lcd-ink); }
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--plate); }
+::-webkit-scrollbar-thumb { background: var(--ink); border: 3px solid var(--plate); }
+a { color: inherit; text-decoration-thickness: 2px; text-underline-offset: 0.22em; }
+a:hover { text-decoration-color: var(--live); }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.skip { position: absolute; left: -9999px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip:focus { left: var(--gutter); top: 12px; z-index: 10; background: var(--ink); color: var(--plate); padding: 8px 12px; }
+
+/* Silk-screened panel lettering: wide caps, the console's own labels. */
+.silk {
+  font-family: var(--display);
+  font-stretch: 125%;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+h1, h2, h3 {
+  font-family: var(--display);
+  font-stretch: 125%;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  text-wrap: balance;
+  margin: 0;
+}
+h2 { font-size: clamp(2rem, 4.2vw, 3.4rem); margin-bottom: 0.5em; }
+h3 { font-size: 1.15rem; letter-spacing: 0; line-height: 1.2; }
+p { margin: 0 0 1em; max-width: 68ch; }
+code, pre, .mono { font-family: var(--mono); font-stretch: 100%; }
+code { font-size: 0.88em; }
+
+/* Faceplate strip */
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px var(--gutter);
+  border-bottom: var(--rule);
+}
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand img { width: 34px; height: 34px; }
+.brand span { font-stretch: 125%; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.04em; }
+.strip nav { margin-left: auto; display: flex; gap: 22px; flex-wrap: wrap; }
+.strip nav a { text-decoration: none; }
+.strip nav a:hover { text-decoration: underline; text-decoration-color: var(--live); }
+
+/* Rocker keys: the page's only button form. */
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 22px;
+  border: var(--rule);
+  background: var(--plate-hi);
+  color: var(--ink);
+  box-shadow: 0 5px 0 var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 120ms var(--ease), box-shadow 120ms var(--ease), background-color 160ms var(--ease);
+}
+.key:hover { background: #ecece8; }
+.key:active, .key[aria-pressed="true"] { transform: translateY(5px); box-shadow: 0 0 0 var(--ink); }
+.key svg { width: 18px; height: 18px; flex: none; }
+.key--primary { background: var(--ink); color: var(--plate-hi); }
+.key--primary:hover { background: #2a2a2a; }
+.key[aria-disabled="true"], .key[aria-disabled="true"]:hover, .key[aria-disabled="true"]:active { cursor: not-allowed; color: var(--ink-soft); border-color: var(--ink-soft); background: transparent; box-shadow: none; transform: translateY(5px); }
+
+/* Console: the first viewport */
+.console { padding: clamp(24px, 3.6vh, 44px) var(--gutter) clamp(28px, 5vh, 56px); }
+.console-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px 48px;
+  align-items: end;
+  margin-bottom: clamp(18px, 3vh, 30px);
+}
+.console-head h1 { grid-column: 1 / -1; font-size: clamp(2.1rem, 5vw, 4.6rem); }
+.console-head p { font-size: clamp(1.02rem, 1.3vw, 1.2rem); margin: 0; max-width: 64ch; color: var(--ink-soft); }
+.actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: stretch; }
+
+.display {
+  position: relative;
+  background: var(--lcd);
+  color: var(--lcd-ink);
+  border: var(--rule);
+  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.18);
+}
+.display-top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 18px;
+  border-bottom: 3px solid var(--lcd-ink);
+}
+.seg {
+  position: relative;
+  font-family: "DSEG14", var(--mono);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  white-space: pre;
+}
+.seg::before {             /* unlit segments behind the lit ones, like a real LCD */
+  content: attr(data-ghost);
+  position: absolute;
+  inset: 0;
+  color: rgba(28, 19, 0, 0.1);
+}
+.seg-label { margin-left: auto; text-align: right; }
+.rows { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
+.row { padding: 14px 18px 16px; min-width: 0; }
+.row + .row { border-left: 3px solid var(--lcd-ink); }
+.row .silk { display: block; margin-bottom: 10px; color: var(--lcd-ink); }
+.row pre {
+  margin: 0;
+  font-size: clamp(0.75rem, 0.86vw, 0.8rem);
+  line-height: 1.5;
+  white-space: pre;
+  overflow-x: auto;
+  scrollbar-color: var(--lcd-ink) transparent;
+}
+.readout { min-height: 18em; } /* the longest message, so switching channels never shifts the page */
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  padding: 10px 18px;
+  border-top: 3px solid var(--lcd-ink);
+}
+.stamp { font-family: var(--mono); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.lamp {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: #6f6f69;
+  vertical-align: -1px;
+}
+.lamp.is-ok { background: var(--lcd); }
+.display .lamp.is-ok { background: radial-gradient(circle, var(--lcd) 0 32%, var(--ink) 36%); }  /* lit on the amber field too */
+.lamp.is-fault { background: var(--ink); box-shadow: inset 0 0 0 2px var(--live); }
+
+.channels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+.channels .key { justify-content: space-between; width: 100%; padding: 8px 18px; min-height: 56px; text-align: left; }
+.channels .key .ch { font-family: "DSEG14", var(--mono); font-size: 1.05rem; }
+.channels .key[aria-pressed="true"] { background: var(--lcd); }
+.channels small { display: block; font-stretch: 100%; font-weight: 500; letter-spacing: 0; text-transform: none; font-size: 0.82rem; color: var(--ink-soft); }
+
+.interpret { animation: scan 420ms var(--ease) both; }
+@keyframes scan { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* Sections share the faceplate and the 3px rule; density varies. */
+section { padding: clamp(56px, 9vh, 104px) var(--gutter); border-top: var(--rule); }
+.lede { font-size: clamp(1.15rem, 1.6vw, 1.4rem); max-width: 56ch; }
+
+/* The problem: a quiet passage */
+.problem { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 64px; align-items: start; }
+.problem .lede { margin-top: 0.4em; }
+
+/* The journey: the recorded run, on the faceplate like every other panel */
+.task {
+  border: var(--rule);
+  background: var(--plate-hi);
+  padding: 18px 22px;
+  margin: 34px 0 28px;
+  max-width: 90ch;
+}
+.task .silk { display: block; margin-bottom: 8px; }
+.task p { margin: 0; font-size: 1.1rem; }
+.path { list-style: none; margin: 0; padding: 0; border: var(--rule); background: var(--plate-hi); }
+.step { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 0 20px; padding: 22px 24px 24px; }
+.step + .step { border-top: var(--rule); }
+.step .lamp { width: 16px; height: 16px; margin-top: 4px; transition: background-color 500ms var(--ease); }
+.step.lit .lamp, .no-js .step .lamp { background: var(--lcd); }
+.step h3 { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.lcd-stamp {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--lcd);
+  color: var(--lcd-ink);
+  border: 2px solid var(--ink);
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.step pre {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  background: var(--plate);
+  border: 2px solid var(--ink);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+  scrollbar-color: var(--ink) var(--plate);
+}
+.step p { margin: 10px 0 0; color: var(--ink-soft); }
+.answer {
+  margin-top: 28px;
+  background: var(--lcd);
+  color: var(--lcd-ink);
+  border: var(--rule);
+  padding: 18px 22px;
+  max-width: 90ch;
+}
+.answer p { margin: 8px 0 0; font-size: 1.1rem; }
+.note { font-size: 0.85rem; color: var(--ink-soft); margin-top: 22px; }
+
+/* Systems: one comparison. Columns per channel on desktop, one block per channel on phones. */
+.board {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.5fr) repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(5, auto);
+  gap: 3px;
+  margin-top: 28px;
+  background: var(--ink);
+  border: var(--rule);
+}
+.board-labels, .chan { display: grid; grid-row: 1 / span 5; grid-template-rows: subgrid; }
+.board-labels > *, .chan > * { margin: 0; padding: 14px 16px; }
+.board-labels > * { background: var(--plate); }
+.board-labels > :first-child { background: var(--ink); color: var(--plate-hi); }
+.chan header { background: var(--ink); color: var(--plate-hi); }
+.chan header .seg { display: block; font-size: 1.05rem; color: var(--lcd); margin-bottom: 6px; }
+.chan header .seg::before { color: rgba(255, 176, 0, 0.14); }
+.chan dl { display: contents; }
+.chan dl > div { background: var(--plate-hi); padding: 14px 16px; }
+.chan dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }  /* labels column covers sighted readers */
+.chan dd { margin: 0; }
+.chan code { background: var(--plate); padding: 1px 5px; }
+.ops { margin: 0; padding: 0; list-style: none; font-family: var(--mono); font-size: 0.8rem; line-height: 1.9; }
+
+/* Fault: a failure arrives as data */
+.fault { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 32px 56px; align-items: start; }
+.fault .display { margin-top: 6px; }
+.fault .display pre { padding: 16px 18px; margin: 0; font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Add a channel */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: var(--rule); margin-top: 32px; background: var(--plate-hi); }
+.steps > div { padding: 22px 20px 24px; min-width: 0; }
+.steps > div + div { border-left: var(--rule); }
+.steps .n { font-family: "DSEG14", var(--mono); font-size: 2rem; display: block; margin-bottom: 14px; }
+.steps pre { margin: 14px 0 0; padding: 12px; background: var(--plate); border: 2px solid var(--ink); font-size: 0.76rem; line-height: 1.6; overflow-x: auto; white-space: pre; }
+.untouched { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.untouched code { font-size: 0.85rem; text-decoration: line-through; text-decoration-color: var(--live); text-decoration-thickness: 2px; }
+
+/* Signals */
+.signals { list-style: none; margin: 30px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: var(--rule); }
+.signals li { display: grid; grid-template-columns: minmax(150px, 0.45fr) minmax(0, 1fr); gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--ink); }
+.signals li:nth-child(odd) { padding-right: 32px; }
+.signals li:nth-child(even) { padding-left: 32px; border-left: 1px solid var(--ink); }
+.ci { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+/* Name */
+.name { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 32px 56px; align-items: center; }
+.name img { width: clamp(120px, 16vw, 220px); height: auto; }
+
+/* Close */
+.close { background: var(--lcd); color: var(--lcd-ink); }
+.close h2 { max-width: 18ch; }
+.close .actions { flex-direction: row; flex-wrap: wrap; margin-top: 26px; }
+footer { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; padding: 22px var(--gutter); border-top: var(--rule); }
+footer .by { margin-right: auto; }
+
+@media (max-width: 980px) {
+  .console-head, .problem, .fault, .name { grid-template-columns: minmax(0, 1fr); }
+  .rows { grid-template-columns: minmax(0, 1fr); }
+  .readout { min-height: 0; }
+  .row + .row { border-left: 0; border-top: 3px solid var(--lcd-ink); }
+  .steps { grid-template-columns: 1fr; }
+  .steps > div + div { border-left: 0; border-top: var(--rule); }
+  .signals { grid-template-columns: 1fr; }
+  .signals li:nth-child(odd), .signals li:nth-child(even) { padding: 16px 0; border-left: 0; }
+}
+@media (max-width: 640px) {
+  .strip nav { display: none; }
+  .channels { grid-template-columns: 1fr; gap: 12px; }
+  .channels .key { min-height: 52px; }
+  .seg-label { display: none; }
+  .console-head h1 { font-stretch: 112%; }
+  .signals li { grid-template-columns: 1fr; gap: 4px; }
+  .row pre { white-space: break-spaces; overflow-wrap: anywhere; }
+  .board { display: block; background: none; border: 0; }
+  .board-labels { display: none; }
+  .chan { display: block; border: var(--rule); margin-bottom: 18px; background: var(--plate-hi); }
+  .chan dl { display: block; margin: 0; padding: 0; }
+  .chan dl > div { border-top: var(--rule); }
+  .chan dt { position: static; width: auto; height: auto; overflow: visible; clip-path: none; display: block; margin-bottom: 4px; }
+  .actions .key { flex: 1 1 100%; justify-content: center; }
+}
+@media (min-width: 981px) and (max-height: 860px) {
+  .console-head h1 { font-size: clamp(2.1rem, 4.2vw, 4rem); }
+  .readout { min-height: 15.5em; }
+  .row pre { line-height: 1.4; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body class="no-js">
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="strip">
+  <a class="brand" href="./" aria-label="Heptapod home">
+    <img src="logo.svg" alt="" width="34" height="34">
+    <span>HEPTAPOD</span>
+  </a>
+  <nav class="silk" aria-label="Sections">
+    <a href="#journey">The run</a>
+    <a href="#systems">Systems</a>
+    <a href="#add">Add a system</a>
+    <a href="https://github.com/swap-mitra/heptapod">GitHub</a>
+  </nav>
+</header>
+
+<main id="main">
+  <div class="console" aria-labelledby="title">
+    <div class="console-head">
+      <h1 id="title">One agent.<br>Every system's language.</h1>
+      <div>
+        <p>Heptapod gives an LLM agent one tool interface to REST, SOAP, and SQL backends, and translates API key, OAuth2, and basic auth underneath. The agent never learns which protocol is behind a tool, so adding a system never changes the agent.</p>
+      </div>
+      <div class="actions">
+        <a class="key key--primary silk" href="https://github.com/swap-mitra/heptapod">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+          Open the repository
+        </a>
+        <span class="key silk" role="link" aria-disabled="true" title="The demo video is being recorded">
+          <span class="lamp" aria-hidden="true"></span>
+          Demo video: recording
+        </span>
+      </div>
+    </div>
+
+    <div class="display" role="region" aria-label="Interpreter display">
+      <div class="display-top">
+        <span class="seg" id="ch-num" data-ghost="~~ ~~">CH 03</span>
+        <span class="silk">Interpreting</span>
+        <span class="seg seg-label" id="ch-name" data-ghost="~~~~~~~~~">INVENTORY</span>
+      </div>
+      <div class="rows">
+        <div class="row">
+          <span class="silk">Agent says</span>
+          <pre id="says"><code>inventory(
+  operation="get_stock",
+  partNumber="BP-310",
+)</code></pre>
+        </div>
+        <div class="row">
+          <span class="silk">System hears</span>
+          <pre class="readout" id="hears"><code>POST /soap HTTP/1.1
+Authorization: Bearer ••••••••
+Content-Type: text/xml; charset=utf-8
+SOAPAction: "urn:heptapod:inventory#GetStock"
+
+&lt;?xml version='1.0' encoding='utf-8'?&gt;
+&lt;ns0:Envelope xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:ns1="urn:heptapod:inventory"&gt;
+  &lt;ns0:Body&gt;
+    &lt;ns1:GetStock&gt;&lt;ns1:partNumber&gt;BP-310&lt;/ns1:partNumber&gt;&lt;/ns1:GetStock&gt;
+  &lt;/ns0:Body&gt;
+&lt;/ns0:Envelope&gt;</code></pre>
+        </div>
+      </div>
+      <div class="status">
+        <span class="lamp is-ok" aria-hidden="true"></span>
+        <span class="silk">Recorded</span>
+        <span class="stamp" id="stamp">inventory.get_stock ok 26.0ms</span>
+        <span class="stamp" id="auth" style="margin-left:auto">SOAP 1.1 · OAuth2 client credentials</span>
+      </div>
+    </div>
+
+    <p class="sr-only" id="announce" aria-live="polite"></p>
+    <div class="channels" role="group" aria-label="Choose a system">
+      <button class="key silk" type="button" data-ch="0" aria-pressed="false"><span>CRM<small>REST + API key</small></span><span class="ch" aria-hidden="true">01</span></button>
+      <button class="key silk" type="button" data-ch="1" aria-pressed="false"><span>Ticketing<small>SQL + HTTP basic</small></span><span class="ch" aria-hidden="true">02</span></button>
+      <button class="key silk" type="button" data-ch="2" aria-pressed="true"><span>Inventory<small>SOAP + OAuth2</small></span><span class="ch" aria-hidden="true">03</span></button>
+    </div>
+  </div>
+
+  <section class="problem" aria-labelledby="problem-title">
+    <h2 id="problem-title">Agents stall on plumbing, not on the model.</h2>
+    <div>
+      <p class="lede">Real organizations run systems built decades apart. Each speaks its own protocol and guards itself with its own auth, and that plumbing usually gets rebuilt from scratch for every client and every system.</p>
+      <p>Heptapod is the reusable layer underneath: one contract every backend implements, one registry the agent talks to, and one auth layer that turns a declared scheme into request credentials. Adapters never raise; every call returns a structured result the agent can reason about.</p>
+    </div>
+  </section>
+
+  <section id="journey" aria-labelledby="journey-title">
+    <h2 id="journey-title">One request, three systems, one agent.</h2>
+    <p class="lede">A recorded run of the unmodified agent on a free OpenRouter model. Every line below is the real log; the stamps are measured latencies.</p>
+    <div class="task">
+      <span class="silk">Task given to the agent</span>
+      <p>“Customer Ada Lindqvist called. Find her open support ticket, check inventory stock for the part it references, and update her email in the CRM to ada.l@lindqvist-marine.example.”</p>
+    </div>
+    <ol class="path">
+      <li class="step">
+        <span class="lamp" aria-hidden="true"></span>
+        <div>
+          <h3>Finds the customer in the CRM <span class="lcd-stamp">crm.list_customers ok 21.2ms</span></h3>
+          <pre><code>{"operation": "list_customers"}
+-&gt; C-1001  Ada Lindqvist  open_ticket_ids: ["T-9001"]</code></pre>
+          <p>REST with an API key. The CRM pages its list two at a time; the adapter follows every cursor, so the agent sees all five customers at once.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="lamp" aria-hidden="true"></span>
+        <div>
+          <h3>Reads the ticket <span class="lcd-stamp">ticketing.get_ticket ok 6.4ms</span></h3>
+          <pre><code>{"ticket_no": "T-9001", "operation": "get_ticket"}
+-&gt; "Bilge pump cycling continuously"  part_ref: BP-310  state: open</code></pre>
+          <p>SQL over HTTP with basic auth, bound parameters only. The ticketing system names the customer <code>cust_ref</code> and the part <code>part_ref</code>.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="lamp" aria-hidden="true"></span>
+        <div>
+          <h3>Checks stock for the part <span class="lcd-stamp">inventory.get_stock ok 26.0ms</span></h3>
+          <pre><code>{"operation": "get_stock", "partNumber": "BP-310"}
+-&gt; RTM-01  bin A-04-2  quantityOnHand: 3</code></pre>
+          <p>SOAP with an OAuth2 token the auth layer fetched and cached. Same part, third spelling: <code>partNumber</code>.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="lamp" aria-hidden="true"></span>
+        <div>
+          <h3>Updates her email in the CRM <span class="lcd-stamp">crm.update_customer ok 6.2ms</span></h3>
+          <pre><code>{"operation": "update_customer", "email": "ada.l@lindqvist-marine.example", "customer_id": "C-1001"}
+-&gt; email: ada.l@lindqvist-marine.example</code></pre>
+        </div>
+      </li>
+    </ol>
+    <div class="answer">
+      <span class="silk">The agent's answer</span>
+      <p>Ticket T-9001, “Bilge pump cycling continuously”, references part BP-310. 3 units are on hand at warehouse RTM-01, bin A-04-2. Her email is now ada.l@lindqvist-marine.example.</p>
+    </div>
+    <p class="note">Recorded 4 October 2026 with <code>openrouter/free</code>. All customers, tickets, and parts are synthetic mock data.</p>
+  </section>
+
+  <section id="systems" aria-labelledby="systems-title">
+    <h2 id="systems-title">Three systems that were never meant to talk.</h2>
+    <p class="lede">Three unrelated domains, three protocols, three auth schemes, each with the kind of quirk real systems have. One contract covers all of them.</p>
+    <div class="board">
+      <div class="board-labels" aria-hidden="true">
+        <span class="silk">Channel</span>
+        <span class="silk">Protocol</span>
+        <span class="silk">Auth</span>
+        <span class="silk">Quirk</span>
+        <span class="silk">Operations</span>
+      </div>
+      <article class="chan" aria-labelledby="ch1-name">
+        <header><span class="seg" data-ghost="~~" aria-hidden="true">01</span><span class="silk" id="ch1-name">CRM</span></header>
+        <dl>
+          <div><dt class="silk">Protocol</dt><dd>REST + JSON</dd></div>
+          <div><dt class="silk">Auth</dt><dd>API key in <code>X-API-Key</code></dd></div>
+          <div><dt class="silk">Quirk</dt><dd>Cursor pagination, two per page. The adapter follows every cursor.</dd></div>
+          <div><dt class="silk">Operations</dt><dd><ul class="ops"><li>list_customers</li><li>get_customer</li><li>create_customer</li><li>update_customer</li></ul></dd></div>
+        </dl>
+      </article>
+      <article class="chan" aria-labelledby="ch2-name">
+        <header><span class="seg" data-ghost="~~" aria-hidden="true">02</span><span class="silk" id="ch2-name">Ticketing</span></header>
+        <dl>
+          <div><dt class="silk">Protocol</dt><dd>SQL over HTTP, on SQLite</dd></div>
+          <div><dt class="silk">Auth</dt><dd>HTTP basic</dd></div>
+          <div><dt class="silk">Quirk</dt><dd>Every fifth query answers HTTP 429. The adapter honours <code>Retry-After</code> and retries.</dd></div>
+          <div><dt class="silk">Operations</dt><dd><ul class="ops"><li>list_tickets</li><li>get_ticket</li><li>create_ticket</li><li>update_ticket</li></ul></dd></div>
+        </dl>
+      </article>
+      <article class="chan" aria-labelledby="ch3-name">
+        <header><span class="seg" data-ghost="~~" aria-hidden="true">03</span><span class="silk" id="ch3-name">Inventory</span></header>
+        <dl>
+          <div><dt class="silk">Protocol</dt><dd>SOAP 1.1 + XML</dd></div>
+          <div><dt class="silk">Auth</dt><dd>OAuth2 client credentials, short-lived tokens cached and refreshed</dd></div>
+          <div><dt class="silk">Quirk</dt><dd>Its own camelCase field names. Numbers arrive as strings.</dd></div>
+          <div><dt class="silk">Operations</dt><dd><ul class="ops"><li>list_parts</li><li>get_part</li><li>get_stock</li><li>adjust_stock</li></ul></dd></div>
+        </dl>
+      </article>
+    </div>
+  </section>
+
+  <section class="fault" aria-labelledby="fault-title">
+    <div>
+      <h2 id="fault-title">Failures arrive as data.</h2>
+      <p>Adapters never raise. Bad arguments, HTTP errors, SOAP faults, malformed XML, timeouts, and rate limits all come back as a failed result with a readable reason, which the agent hands to the model so it can correct itself.</p>
+      <p>Every call is logged once with its system, operation, latency, and outcome, so a failure traces to one adapter without reading the transcript.</p>
+    </div>
+    <div class="display" role="figure" aria-label="A SOAP fault returned as a structured result">
+      <div class="status" style="border-top:0;border-bottom:3px solid var(--lcd-ink)">
+        <span class="lamp is-fault" aria-hidden="true"></span>
+        <span class="silk">Fault</span>
+        <span class="stamp">inventory.get_part failed</span>
+      </div>
+      <pre><code>AdapterResult(
+    success=False,
+    data=None,
+    error="inventory returned HTTP 500: SOAP fault soap:Client: part XX-1 does not exist",
+)</code></pre>
+    </div>
+  </section>
+
+  <section id="add" aria-labelledby="add-title">
+    <h2 id="add-title">A fourth system is one class and one table.</h2>
+    <p class="lede">The registry, the auth layer, and the agent never change. The three adapters above are 117, 134, and 129 lines, documentation included.</p>
+    <div class="steps">
+      <div>
+        <span class="n seg" data-ghost="~" aria-hidden="true">1</span>
+        <h3>Write the adapter</h3>
+        <p>Declare a name, a schema, and an auth scheme. Return a result; never raise.</p>
+<pre><code>class BillingAdapter:
+    name = "billing"
+    input_schema = {...}
+
+    def __init__(self, base_url):
+        self.auth_config = {
+            "type": "api_key",
+            "header": "X-Billing-Key",
+            "secret_ref": "BILLING_API_KEY",
+        }
+
+    def execute(self, input, credentials):
+        ...  # -&gt; AdapterResult</code></pre>
+      </div>
+      <div>
+        <span class="n seg" data-ghost="~" aria-hidden="true">2</span>
+        <h3>Register it</h3>
+        <p>One table in <code>adapters.toml</code>. Secrets stay in the environment.</p>
+<pre><code>[billing]
+class = "adapters.billing:BillingAdapter"
+base_url = "http://localhost:8004"</code></pre>
+      </div>
+      <div>
+        <span class="n seg" data-ghost="~" aria-hidden="true">3</span>
+        <h3>Test it</h3>
+        <p>Against its own mock, without an LLM. The suite fails if any adapter lacks its test file.</p>
+<pre><code>tests/test_billing.py</code></pre>
+      </div>
+    </div>
+    <p class="untouched"><span class="silk">Untouched</span> <code>core/registry.py</code> <code>core/auth.py</code> <code>agent/runtime.py</code></p>
+  </section>
+
+  <section aria-labelledby="signals-title">
+    <h2 id="signals-title">Built to be read.</h2>
+    <ul class="signals">
+      <li><span class="silk">Language</span><span>Python 3.12, MIT licensed</span></li>
+      <li><span class="silk">Dependencies</span><span>Standard library for HTTP and XML. No HTTP client, no SOAP library.</span></li>
+      <li><span class="silk">Models</span><span>Anthropic, or free models through OpenRouter</span></li>
+      <li><span class="silk">Auth</span><span>API key, HTTP basic, OAuth2 client credentials</span></li>
+      <li><span class="silk">Tests</span><span>Every adapter against its own mock; the agent loop against scripted model responses</span></li>
+      <li><span class="silk">CI</span><span>The full suite against all three mocks on every push</span></li>
+    </ul>
+    <p class="ci"><a class="silk" href="https://github.com/swap-mitra/heptapod/actions/workflows/ci.yml">CI runs on GitHub Actions</a></p>
+  </section>
+
+  <section class="name" aria-labelledby="name-title">
+    <img src="logo.svg" alt="The Heptapod mark: seven segments forming a heptagon, one lit amber" width="220" height="220">
+    <div>
+      <h2 id="name-title">Why Heptapod.</h2>
+      <p class="lede">Heptapods are the visitors in <em>Arrival</em>, adapted from Ted Chiang's <em>Story of Your Life</em>. Their written language encodes meaning non-linearly, so understanding them is a universal translation problem, not a word-for-word swap.</p>
+      <p>Getting systems that were never designed to talk to each other to understand one agent is the same kind of problem. The mark is seven display segments closed into one ring, with one lit: the system currently being spoken to.</p>
+    </div>
+  </section>
+
+  <section class="close" aria-labelledby="close-title">
+    <h2 id="close-title">Read the code. Run the agent.</h2>
+    <p class="lede">Clone it, start the three mock systems with Docker, and give the agent a task. The README covers setup, configuration, and adding a backend.</p>
+    <div class="actions">
+      <a class="key key--primary silk" href="https://github.com/swap-mitra/heptapod">Open the repository</a>
+      <a class="key silk" href="https://github.com/swap-mitra/heptapod#quick-start">Quick start</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span class="by">Built by <strong>Swapnil Mitra</strong></span>
+  <a class="silk" href="https://www.linkedin.com/in/swapnilmitra/">LinkedIn</a>
+  <a class="silk" href="https://github.com/swap-mitra">GitHub</a>
+  <a class="silk" href="https://github.com/swap-mitra/heptapod/blob/main/LICENSE">MIT License</a>
+</footer>
+
+<script>
+(() => {
+  document.body.classList.remove("no-js");
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const channels = [
+    {
+      num: "CH 01", name: "CRM", proto: "REST + JSON · API key",
+      stamp: "crm.update_customer ok 6.2ms",
+      says: 'crm(\n  operation="update_customer",\n  customer_id="C-1001",\n  email="ada.l@lindqvist-marine.example",\n)',
+      hears: 'PATCH /customers/C-1001 HTTP/1.1\nX-API-Key: ••••••••\nAccept: application/json\nContent-Type: application/json\n\n{"email": "ada.l@lindqvist-marine.example"}',
+    },
+    {
+      num: "CH 02", name: "TICKETING", proto: "SQL over HTTP · HTTP basic",
+      stamp: "ticketing.get_ticket ok 6.4ms",
+      says: 'ticketing(\n  operation="get_ticket",\n  ticket_no="T-9001",\n)',
+      hears: 'POST /query HTTP/1.1\nAuthorization: Basic ••••••••\nContent-Type: application/json\nAccept: application/json\n\n{"sql": "SELECT ticket_no, cust_ref, summary, part_ref,\n         state, assigned_to, opened_at\n         FROM tickets WHERE ticket_no = ?1",\n "params": ["T-9001"]}',
+    },
+    {
+      num: "CH 03", name: "INVENTORY", proto: "SOAP 1.1 · OAuth2 client credentials",
+      stamp: "inventory.get_stock ok 26.0ms",
+      says: 'inventory(\n  operation="get_stock",\n  partNumber="BP-310",\n)',
+      hears: 'POST /soap HTTP/1.1\nAuthorization: Bearer ••••••••\nContent-Type: text/xml; charset=utf-8\nSOAPAction: "urn:heptapod:inventory#GetStock"\n\n<?xml version=\'1.0\' encoding=\'utf-8\'?>\n<ns0:Envelope xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/"\n    xmlns:ns1="urn:heptapod:inventory">\n  <ns0:Body>\n    <ns1:GetStock><ns1:partNumber>BP-310</ns1:partNumber></ns1:GetStock>\n  </ns0:Body>\n</ns0:Envelope>',
+    },
+  ];
+  const $ = (id) => document.getElementById(id);
+  const keys = [...document.querySelectorAll(".channels .key")];
+  const lcd = (el, text) => {  // unlit segments match the lit text's length
+    el.textContent = text;
+    el.dataset.ghost = text.replace(/[^ ]/g, "~");
+  };
+  const show = (i) => {
+    const c = channels[i];
+    lcd($("ch-num"), c.num);
+    lcd($("ch-name"), c.name);
+    $("stamp").textContent = c.stamp;
+    $("auth").textContent = c.proto;
+    $("says").innerHTML = "<code>" + esc(c.says) + "</code>";
+    $("hears").innerHTML = "<code>" + esc(c.hears) + "</code>";
+    for (const el of [$("says"), $("hears")]) { el.classList.remove("interpret"); void el.offsetWidth; el.classList.add("interpret"); }
+    keys.forEach((k, j) => k.setAttribute("aria-pressed", String(j === i)));
+  };
+
+  // Signature motion: on load the console interprets one call per channel, once, then waits.
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let timer = null;
+  if (!reduce) {
+    let i = 0;
+    show(0);
+    timer = setInterval(() => { i += 1; show(i); if (i === channels.length - 1) clearInterval(timer); }, 2600);
+  }
+  keys.forEach((k, i) => k.addEventListener("click", () => {
+    clearInterval(timer);
+    show(i);
+    const c = channels[i];
+    $("announce").textContent = `Channel ${i + 1}, ${c.name.toLowerCase()}: ${c.stamp}`;
+  }));
+
+  // The journey lights one node at a time as the reader reaches it.
+  const steps = document.querySelectorAll(".step");
+  if ("IntersectionObserver" in window && !reduce) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) { e.target.classList.add("lit"); io.unobserve(e.target); }
+    }, { rootMargin: "0px 0px -35% 0px" });
+    steps.forEach((s) => io.observe(s));
+  } else {
+    steps.forEach((s) => s.classList.add("lit"));
+  }
+})();
+</script>
+</body>
+</html>
