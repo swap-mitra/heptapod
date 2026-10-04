@@ -1,8 +1,19 @@
+<div align="center">
+
 # Heptapod
 
-[![CI](https://github.com/swap-mitra/heptapod/actions/workflows/ci.yml/badge.svg)](https://github.com/swap-mitra/heptapod/actions/workflows/ci.yml)
+**One tool interface for LLM agents across REST, SOAP, and SQL backends.**
 
-Heptapod gives an LLM agent one uniform tool interface to enterprise backends, whether they speak REST, SOAP, or SQL, and translates each system's authentication underneath. The agent never learns which protocol or auth scheme sits behind a tool, so the same agent code works against every system, and adding a system never changes the agent.
+Authentication (API key, OAuth2 client credentials, HTTP basic) is translated underneath,<br>
+so agent code never changes per system, and adding a system never changes the agent.
+
+[![CI](https://github.com/swap-mitra/heptapod/actions/workflows/ci.yml/badge.svg)](https://github.com/swap-mitra/heptapod/actions/workflows/ci.yml)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+[Quick start](#quick-start) · [How it works](#how-it-works) · [Adding a backend](#adding-a-backend) · [Contributing](CONTRIBUTING.md)
+
+</div>
 
 ## Contents
 
@@ -21,6 +32,8 @@ Heptapod gives an LLM agent one uniform tool interface to enterprise backends, w
 - [Troubleshooting](#troubleshooting)
 - [Project status](#project-status)
 - [About the name](#about-the-name)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Why Heptapod
 
@@ -371,3 +384,11 @@ Version 0.1, in active development. All three backends, all three auth schemes, 
 ## About the name
 
 Heptapods are the aliens in *Arrival*, adapted from Ted Chiang's *Story of Your Life*. Their written language encodes meaning non-linearly, which makes understanding them a genuinely universal translation problem rather than a word-for-word swap. Translating between systems that were never designed to talk to each other is the problem this project works on.
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and conventions, and [SECURITY.md](SECURITY.md) to report a vulnerability privately. Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## License
+
+Released under the [MIT License](LICENSE).
