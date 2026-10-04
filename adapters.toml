@@ -8,3 +8,7 @@ base_url = "http://localhost:8001"
 [ticketing]
 class = "adapters.ticketing:TicketingAdapter"
 base_url = "http://localhost:8002"
+
+[inventory]
+class = "adapters.inventory:InventoryAdapter"
+base_url = "http://localhost:8003"

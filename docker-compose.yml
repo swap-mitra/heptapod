@@ -23,3 +23,15 @@ services:
       test: ["CMD", "python", "-c", "import urllib.request as r; r.urlopen(\"http://localhost:8000/health\")"]
       interval: 2s
       retries: 15
+  inventory:
+    build: {context: ., dockerfile: mocks/Dockerfile}
+    command: uvicorn --factory mocks.inventory_service.app:create_app --host 0.0.0.0 --port 8000
+    environment:
+      INVENTORY_CLIENT_ID: heptapod-agent
+      INVENTORY_CLIENT_SECRET: inventory-dev-secret
+      INVENTORY_TOKEN_TTL: "60"
+    ports: ["8003:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as r; r.urlopen(\"http://localhost:8000/health\")"]
+      interval: 2s
+      retries: 15
