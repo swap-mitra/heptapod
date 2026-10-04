@@ -1,14 +1,31 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "heptapod"
 version = "0.1.0"
-description = "One uniform tool interface for LLM agents across REST, SOAP, and SQL backends."
+description = "One tool interface for LLM agents across REST, SOAP, and SQL backends, with API key, OAuth2, and basic auth handled underneath."
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "swap-mitra" }]
+keywords = ["llm", "ai-agents", "tool-calling", "function-calling", "enterprise-integration", "rest", "soap", "sql", "oauth2", "adapter"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries",
+]
 dependencies = ["anthropic>=1.8"]
+
+[project.urls]
+Homepage = "https://github.com/swap-mitra/heptapod"
+Issues = "https://github.com/swap-mitra/heptapod/issues"
 
 [project.optional-dependencies]
 # The mock backends; also needed by the tests, which run each mock in-process.
