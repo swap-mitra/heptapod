@@ -6,3 +6,7 @@ __pycache__/
 *.db
 specs/
 AGENTS.md
+# Design-process artifacts (impeccable): local only, like specs/
+PRODUCT.md
+DESIGN.md
+.impeccable/
