@@ -390,7 +390,7 @@ docker-compose.yml mock backends for local runs and CI
 
 ## Project status
 
-Version 0.1, in active development. All three backends, all three auth schemes, both LLM providers, and the full cross-system demo task work end to end, and an integration test runs the full demo task in CI with a scripted model. A 52-second demo video is on the [landing page](https://swap-mitra.github.io/heptapod/#demo). Next: the v0.1.0 release.
+Version 0.1.0, the first release. All three backends, all three auth schemes, both LLM providers, and the full cross-system demo task work end to end, and an integration test runs the full demo task in CI with a scripted model. A 52-second demo video is on the [landing page](https://swap-mitra.github.io/heptapod/#demo). Next: proving extensibility by adding a fourth backend in an unrelated domain, timed, with nothing in `core/`, `agent/`, or the existing adapters changed.
 
 ## About the name
 
