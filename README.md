@@ -13,6 +13,10 @@ so agent code never changes per system, and adding a system never changes the ag
 
 [Quick start](#quick-start) · [How it works](#how-it-works) · [Adding a backend](#adding-a-backend) · [Contributing](CONTRIBUTING.md)
 
+<a href="https://swap-mitra.github.io/heptapod/#demo"><img src="docs/demo-poster.jpg" alt="Heptapod demo video: one agent, every system's language" width="720"></a>
+
+**[Watch the 52-second demo](https://swap-mitra.github.io/heptapod/#demo)**
+
 </div>
 
 ## Contents
@@ -386,7 +390,7 @@ docker-compose.yml mock backends for local runs and CI
 
 ## Project status
 
-Version 0.1, in active development. All three backends, all three auth schemes, both LLM providers, and the full cross-system demo task work end to end, and an integration test runs the full demo task in CI with a scripted model. Next: a demo video and the v0.1.0 release.
+Version 0.1, in active development. All three backends, all three auth schemes, both LLM providers, and the full cross-system demo task work end to end, and an integration test runs the full demo task in CI with a scripted model. A 52-second demo video is on the [landing page](https://swap-mitra.github.io/heptapod/#demo). Next: the v0.1.0 release.
 
 ## About the name
 

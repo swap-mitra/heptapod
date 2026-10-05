@@ -227,6 +227,26 @@ code { font-size: 0.88em; }
 section { padding: clamp(56px, 9vh, 104px) var(--gutter); border-top: var(--rule); }
 .lede { font-size: clamp(1.15rem, 1.6vw, 1.4rem); max-width: 56ch; }
 
+/* Demo: the video sits in a monitor frame of the console, ink bezel and a segment runtime. */
+.runtime { font-family: "DSEG14", var(--mono); font-size: 1.05rem; letter-spacing: 0.06em; }
+.film-section .lede { margin-bottom: 0; }
+.film { margin: 30px 0 0; border: var(--rule); background: var(--ink); }
+.film-bar { display: flex; align-items: center; gap: 12px; padding: 10px 18px; color: var(--plate-hi); }
+.film-bar .lamp { border-color: var(--plate-hi); }
+.film-bar .seg { margin-left: auto; font-size: 1.15rem; background: var(--lcd); color: var(--lcd-ink); padding: 5px 8px; box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.18); }
+.film-bar .seg::before { inset: 5px 8px; }
+.film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--ink); }
+.film figcaption { background: var(--plate-hi); border-top: var(--rule); }
+.film summary { padding: 14px 18px; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 12px; }
+.film summary::-webkit-details-marker { display: none; }
+.film summary::before { content: ""; width: 10px; height: 10px; border-right: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: rotate(-45deg); transition: transform 160ms var(--ease); }
+.film details[open] summary::before { transform: rotate(45deg) translate(-2px, -2px); }
+.film summary:hover { background: #ecece8; }
+.film summary:focus-visible { outline-offset: -6px; }
+.film ol { margin: 0; padding: 4px 22px 20px 44px; max-width: 80ch; }
+.film li { padding: 4px 0; }
+.film li::marker { font-family: var(--mono); font-size: 0.85em; }
+
 /* The problem: a quiet passage */
 .problem { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 64px; align-items: start; }
 .problem .lede { margin-top: 0.4em; }
@@ -383,6 +403,7 @@ footer .by { margin-right: auto; }
     <span>HEPTAPOD</span>
   </a>
   <nav class="silk" aria-label="Sections">
+    <a href="#demo">Demo</a>
     <a href="#journey">The run</a>
     <a href="#systems">Systems</a>
     <a href="#add">Add a system</a>
@@ -402,10 +423,11 @@ footer .by { margin-right: auto; }
           <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
           Open the repository
         </a>
-        <span class="key silk" role="link" aria-disabled="true" title="The demo video is being recorded">
-          <span class="lamp" aria-hidden="true"></span>
-          Demo video: recording
-        </span>
+        <a class="key silk" href="#demo" aria-label="Watch the demo, 52 seconds">
+          <span class="lamp is-ok" aria-hidden="true"></span>
+          Watch the demo
+          <span class="runtime" aria-hidden="true">0:52</span>
+        </a>
       </div>
     </div>
 
@@ -454,6 +476,37 @@ SOAPAction: "urn:heptapod:inventory#GetStock"
       <button class="key silk" type="button" data-ch="2" aria-pressed="true"><span>Inventory<small>SOAP + OAuth2</small></span><span class="ch" aria-hidden="true">03</span></button>
     </div>
   </div>
+
+  <section id="demo" class="film-section" aria-labelledby="demo-title">
+    <h2 id="demo-title">The whole idea in 52 seconds.</h2>
+    <p class="lede">The problem, how one call is interpreted for each system, the recorded run, and adding a fourth system. There is no narration; every line you need is on screen.</p>
+    <figure class="film">
+      <div class="film-bar">
+        <span class="lamp is-ok" aria-hidden="true"></span>
+        <span class="silk">Recorded</span>
+        <span class="seg" data-ghost="~:~~" aria-hidden="true">0:52</span>
+        <span class="sr-only">Runtime 52 seconds</span>
+      </div>
+      <!-- Rendered from an HTML composition of this page's own tokens, fonts, and recorded run; score synthesized, no stock assets. -->
+      <video controls preload="none" playsinline width="1920" height="1080" poster="demo-poster.jpg" aria-describedby="demo-scenes">
+        <source src="demo.mp4" type="video/mp4">
+        <a href="demo.mp4">Download the demo video (MP4, 6.4 MB)</a>
+      </video>
+      <figcaption>
+        <details>
+          <summary class="silk">What the video shows</summary>
+          <ol id="demo-scenes">
+            <li>Three systems, three languages: REST with an API key, SQL with HTTP basic, SOAP with OAuth2.</li>
+            <li>Agents stall on plumbing, not on the model: each system needs its own glue.</li>
+            <li>Heptapod: one agent, every system's language.</li>
+            <li>The agent says one thing, each system hears its own: the same call shape reaches the CRM, ticketing, and inventory, each with its own credentials and wire format.</li>
+            <li>The recorded run: four tool calls across all three systems, with their measured latencies, and the agent's answer.</li>
+            <li>A fourth system is one class and one table; the registry, auth layer, and agent are untouched.</li>
+          </ol>
+        </details>
+      </figcaption>
+    </figure>
+  </section>
 
   <section class="problem" aria-labelledby="problem-title">
     <h2 id="problem-title">Agents stall on plumbing, not on the model.</h2>
