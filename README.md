@@ -89,7 +89,7 @@ pip install -e ".[dev]"
 
 cp .env.example .env               # then add your LLM key to .env
 docker compose up -d --wait        # start the three mock backends
-python -m agent "Customer Ada Lindqvist called. Find her open support ticket and check stock for the part it references."
+python -m agent "Customer Ada Lindqvist called. Find her open support ticket, check inventory stock for the part it references, and update her email in the CRM to ada.l@lindqvist-marine.example."
 ```
 
 To use OpenRouter's free models, set `HEPTAPOD_PROVIDER=openrouter` and `OPENROUTER_API_KEY` in `.env`. To use Anthropic, set `ANTHROPIC_API_KEY` and leave `HEPTAPOD_PROVIDER` unset.
@@ -348,9 +348,16 @@ pytest
 
 The suite needs neither Docker nor an LLM key. Adapter tests run each mock in-process on a real local port (`tests/conftest.py`), and agent loop tests replay scripted model responses.
 
+```bash
+docker compose up -d --wait
+pytest tests/integration
+```
+
+The integration test runs the full demo task against the three Docker mocks, with a scripted model in place of the LLM. It checks that the data links up across systems, that the CRM record changed, and that the log has one line per tool call.
+
 ### Continuous integration
 
-GitHub Actions runs on every push and pull request: it installs the package on Python 3.12, starts the three mocks with `docker compose up --wait`, and runs the full test suite.
+GitHub Actions runs on every push and pull request: it installs the package on Python 3.12, starts the three mocks with `docker compose up --wait`, and runs the full test suite, including the integration test.
 
 ### Repository layout
 
@@ -379,7 +386,7 @@ docker-compose.yml mock backends for local runs and CI
 
 ## Project status
 
-Version 0.1, in active development. All three backends, all three auth schemes, both LLM providers, and the full cross-system demo task work end to end. Next: an end-to-end integration test of the demo task in CI, driven by a scripted model.
+Version 0.1, in active development. All three backends, all three auth schemes, both LLM providers, and the full cross-system demo task work end to end, and an integration test runs the full demo task in CI with a scripted model. Next: a demo video and the v0.1.0 release.
 
 ## About the name
 

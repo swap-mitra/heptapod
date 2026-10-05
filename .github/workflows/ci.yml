@@ -18,3 +18,4 @@ jobs:
       - if: hashFiles('docker-compose.yml') != ''
         run: docker compose up -d --wait
       - run: pytest
+      - run: pytest tests/integration

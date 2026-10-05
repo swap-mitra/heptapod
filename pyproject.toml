@@ -37,3 +37,5 @@ include = ["core*", "adapters*", "agent*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Integration tests need the compose mocks; run them explicitly with `pytest tests/integration`.
+addopts = "--ignore=tests/integration"
