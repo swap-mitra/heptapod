@@ -29,7 +29,7 @@ Issues = "https://github.com/swap-mitra/heptapod/issues"
 
 [project.optional-dependencies]
 # The mock backends; also needed by the tests, which run each mock in-process.
-mocks = ["fastapi>=0.141", "uvicorn>=0.54"]
+mocks = ["fastapi>=0.142.4", "uvicorn>=0.54"]
 dev = ["pytest>=8", "heptapod[mocks]"]
 
 [tool.setuptools.packages.find]
